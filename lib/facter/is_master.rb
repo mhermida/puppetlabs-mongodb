@@ -10,7 +10,7 @@ def get_mongod_conf_file
   file
 end
 
-Facter.add('mongodb_is_master') do
+Facter.add('is_master') do
   setcode do
     if Facter::Core::Execution.which('mongo')
       file = get_mongod_conf_file
@@ -31,13 +31,12 @@ Facter.add('mongodb_is_master') do
         end
       end
       e = File.exists?('/root/.mongorc.js') ? 'load(\'/root/.mongorc.js\'); ' : ''
-
       # Check if the mongodb server is responding:
-      Facter::Core::Execution.exec("mongo --quiet #{mongoPort} --eval \"#{e}printjson(db.adminCommand({ ping: 1 }))\"")
-
-      if $?.success?
-        mongo_output = Facter::Core::Execution.exec("mongo --quiet #{mongoPort} --eval \"#{e}printjson(db.isMaster())\"")
-        JSON.parse(mongo_output.gsub(/ISODate\((.+?)\)/, '\1 '))['ismaster'] ||= false
+      res = Facter::Core::Execution.execute("mongo --quiet #{mongoPort} --eval \"#{e}printjson(db.adminCommand({ ping: 1 }))\"")
+      if res == '{ "ok" : 1 }'
+        # mongo_output = Facter::Core::Execution.exec("mongo --quiet #{mongoPort} --eval \"#{e}printjson(db.isMaster())\"")
+        # JSON.parse(mongo_output.gsub(/ISODate\((.+?)\)/, '\1 '))['ismaster'] ||= false
+        Facter::Core::Execution.execute("mongo --quiet #{mongoPort} --eval \"#{e}printjson(db.isMaster().ismaster)\"")
       else
         'not_responding'
       end
