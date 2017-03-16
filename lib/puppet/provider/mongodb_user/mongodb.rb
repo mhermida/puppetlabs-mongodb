@@ -1,3 +1,4 @@
+require File.expand_path(File.join(File.dirname(__FILE__), '..','..', '..', 'puppet_x', 'mongodb', 'crypt', 'password_validator.rb' ))
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'mongodb'))
 Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::Mongodb) do
 
@@ -116,6 +117,37 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
   def exists?
     !(@property_hash[:ensure] == :absent or @property_hash[:ensure].nil?)
   end
+
+  def password_hash
+    user = @resource[:username]
+    database = @resource[:database]
+    query_filter=<<-EOS.gsub(/^\s*/, '').gsub(/$\n/, '')
+    {
+      "user": "#{@resource[:username]}",
+      "db": "#{@resource[:database]}"
+    }
+    EOS
+
+    query_proj=<<-EOS.gsub(/^\s*/, '').gsub(/$\n/, '')
+    {
+      "credentials": 1
+    }
+    EOS
+
+    users = JSON.parse mongo_eval(" printjson(db.system.users.find( #{query_filter}, #{query_proj} ).toArray()) ")
+
+    creds = users[0]['credentials']
+    if creds.key?('MONGODB-CR')
+      return creds['MONGODB-CR'] 
+    end
+
+    if creds.key?('SCRAM-SHA-1')
+      validator = Puppet::Puppet_X::Mongodb::Crypt::PasswordValidator.new
+      valid = validator.validate(creds, @resource[:password_hash])
+      return '' unless valid
+      @resource[:password_hash]
+    end
+  end	
 
   def password_hash=(value)
     if db_ismaster
