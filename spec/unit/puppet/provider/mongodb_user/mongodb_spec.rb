@@ -6,11 +6,24 @@ describe Puppet::Type.type(:mongodb_user).provider(:mongodb) do
 
   let(:raw_users) do
     [
-      { '_id' => 'admin.root', 'user' => 'root', 'db' => 'admin', 'credentials' => { 'MONGODB-CR' => 'pass' }, 'roles' => [ { 'role' => 'role2', 'db' => 'admin' },  { 'role' => 'role1', 'db' => 'admin' } ] }
+      { 
+        '_id' => 'admin.root',
+        'user' => 'root',
+        'db' => 'admin',
+        'credentials' => { 'MONGODB-CR' => 'pass' },
+        'roles' => [ { 'role' => 'role2', 'db' => 'admin' },  { 'role' => 'role1', 'db' => 'admin' } ] 
+      }
+     # {
+     #   '_id' => 'admin.marcos',
+     #   'user' => 'marcos',
+     #   'db' => 'admin',
+     #   'credentials' => { 'SCRAM-SHA-1' => { 'iterationCount' => 1000 } },
+     #   'roles' => [ { 'role' => 'root', 'db' => 'admin' } ]
+     # }
     ].to_json
   end
 
-  let(:parsed_users) { %w(root) }
+  let(:parsed_users) { %w(root marcos) }
 
   let(:resource) { Puppet::Type.type(:mongodb_user).new(
     { :ensure        => :present,
