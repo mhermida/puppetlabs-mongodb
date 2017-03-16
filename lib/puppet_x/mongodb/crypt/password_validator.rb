@@ -63,7 +63,3 @@ module PuppetX
     end
   end
 end
-        
-# class Puppet::PuppetX::Mongodb::Crypt::PasswordValidator
-
-

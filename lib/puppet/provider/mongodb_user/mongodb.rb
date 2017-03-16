@@ -142,7 +142,7 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
     end
 
     if creds.key?('SCRAM-SHA-1')
-      validator = Puppet::Puppet_X::Mongodb::Crypt::PasswordValidator.new
+      validator = PuppetX::Mongodb::Crypt::PasswordValidator.new
       valid = validator.validate(creds, @resource[:password_hash])
       return '' unless valid
       @resource[:password_hash]
