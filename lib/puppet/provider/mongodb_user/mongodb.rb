@@ -30,14 +30,13 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
         return allusers
       else
         users = JSON.parse mongo_eval('printjson(db.system.users.find().toArray())')
-
         users.collect do |user|
             new(:name          => user['_id'],
                 :ensure        => :present,
                 :username      => user['user'],
                 :database      => user['db'],
                 :roles         => from_roles(user['roles'], user['db']),
-                :password_hash => user['credentials']['MONGODB-CR'])
+                :password_hash => '')
         end
       end
     else
@@ -51,6 +50,9 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
     users = instances
     resources.each do |name, resource|
       if provider = users.find { |user| user.username == resource[:username] and user.database == resource[:database] }
+        # populate @property_hash with the password_hash from the resource
+        # so we can use it then to check if it has to be updated
+        provider.set(:password_hash => resource[:password_hash])        
         resources[name].provider = provider
       end
     end
@@ -133,8 +135,14 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
     }
     EOS
 
-    users = JSON.parse mongo_eval(
-      "printjson(db.system.users.find( #{query_filter}, #{query_proj} ).toArray())")
+    raw_users = mongo_eval(
+       "printjson(db.system.users.find( #{query_filter}, #{query_proj} ).toArray())")
+
+    return '' if raw_users.nil?
+	
+    users = JSON.parse raw_users
+
+    # Process the credentials
     creds = users[0]['credentials']
     if creds.key?('MONGODB-CR')
       return creds['MONGODB-CR'] 
@@ -142,8 +150,7 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
 
     if creds.key?('SCRAM-SHA-1')
       validator = PuppetX::Mongodb::Crypt::PasswordValidator.new
-      valid = validator.validate(creds, @property_hash[:password_hash])
-      return '' unless valid
+      return '' unless validator.validate(creds, @property_hash[:password_hash])
       @property_hash[:password_hash]
     end
   end	
@@ -209,5 +216,4 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
         end
     end.sort
   end
-
 end
