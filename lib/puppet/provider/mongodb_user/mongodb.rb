@@ -119,12 +119,11 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
   end
 
   def password_hash
-    user = @resource[:username]
-    database = @resource[:database]
+
     query_filter=<<-EOS.gsub(/^\s*/, '').gsub(/$\n/, '')
     {
-      "user": "#{@resource[:username]}",
-      "db": "#{@resource[:database]}"
+      "user": "#{@property_hash[:username]}",
+      "db": "#{@property_hash[:database]}"
     }
     EOS
 
@@ -134,8 +133,8 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
     }
     EOS
 
-    users = JSON.parse mongo_eval(" printjson(db.system.users.find( #{query_filter}, #{query_proj} ).toArray()) ")
-
+    users = JSON.parse mongo_eval(
+      "printjson(db.system.users.find( #{query_filter}, #{query_proj} ).toArray())")
     creds = users[0]['credentials']
     if creds.key?('MONGODB-CR')
       return creds['MONGODB-CR'] 
@@ -143,9 +142,9 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
 
     if creds.key?('SCRAM-SHA-1')
       validator = PuppetX::Mongodb::Crypt::PasswordValidator.new
-      valid = validator.validate(creds, @resource[:password_hash])
+      valid = validator.validate(creds, @property_hash[:password_hash])
       return '' unless valid
-      @resource[:password_hash]
+      @property_hash[:password_hash]
     end
   end	
 
