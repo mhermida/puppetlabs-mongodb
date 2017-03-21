@@ -63,6 +63,7 @@ class mongodb::server::config {
   $set_parameter   = $mongodb::server::set_parameter
   $syslog          = $mongodb::server::syslog
   $ssl             = $mongodb::server::ssl
+  $ssl_mode        = $mongodb::server::ssl_mode
   $ssl_key         = $mongodb::server::ssl_key
   $ssl_ca          = $mongodb::server::ssl_ca
   $storage_engine  = $mongodb::server::storage_engine
@@ -141,6 +142,7 @@ class mongodb::server::config {
       # - $slowms
       # - $smallfiles
       # - $ssl
+      # - $ssl_mode
       # - $ssl_ca
       # - $ssl_key
       # - $syslog
