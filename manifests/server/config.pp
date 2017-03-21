@@ -1,6 +1,5 @@
 # PRIVATE CLASS: do not call directly
 class mongodb::server::config {
-<<<<<<< HEAD
   $ensure           = $mongodb::server::ensure
   $user             = $mongodb::server::user
   $group            = $mongodb::server::group
@@ -56,6 +55,7 @@ class mongodb::server::config {
   $quiet            = $mongodb::server::quiet
   $slowms           = $mongodb::server::slowms
   $keyfile          = $mongodb::server::keyfile
+  $clusterauthmode  = $mongodb::server::clusterauthmode
   $key              = $mongodb::server::key
   $ipv6             = $mongodb::server::ipv6
   $bind_ip          = $mongodb::server::bind_ip
