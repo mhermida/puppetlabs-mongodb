@@ -54,6 +54,7 @@ class mongodb::server::config {
   $quiet           = $mongodb::server::quiet
   $slowms          = $mongodb::server::slowms
   $keyfile         = $mongodb::server::keyfile
+  $clusterauthmode = $mongodb::server::clusterauthmode
   $key             = $mongodb::server::key
   $ipv6            = $mongodb::server::ipv6
   $bind_ip         = $mongodb::server::bind_ip

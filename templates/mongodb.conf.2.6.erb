@@ -78,6 +78,9 @@ security.authorization: disabled
 <% if @keyfile -%>
 security.keyFile: <%= @keyfile %>
 <% end -%>
+<% if @clusterauthmode %>
+security.clusterAuthMode: <%= @clusterauthmode %> 
+<% end -%>
 <% if @noscripting -%>
 security.javascriptEnabled: <%= @noscripting %>
 <% end -%>

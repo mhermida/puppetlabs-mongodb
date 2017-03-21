@@ -33,13 +33,30 @@ describe 'mongodb::server::config', :type => :class do
     }
   end
 
-  describe 'with default ssl_mode on mongodb 3.4.2' do
-    let(:pre_condition) { "class { 'mongodb::globals': version => '3.4.2' }  class { 'mongodb::server': config => '/etc/mongod.conf', dbpath => '/var/lib/mongo', ssl => true, ssl_key => '/var/lib/mongodb/ssl/key.pem' }" }
+  context 'ssl options for 3.4.2' do
 
-    it {
-      is_expected.to contain_file('/etc/mongod.conf').with_content(/^net\.ssl\.mode: requireSSL/)
-      is_expected.to contain_file('/etc/mongod.conf').with_content(/^net\.ssl\.PEMKeyFile: \/var\/lib\/mongodb\/ssl\/key\.pem/)
-    }
+    let(:pre_condition) { "class { 'mongodb::globals': version => '3.4.2' }  class { 'mongodb::server': config => '/etc/mongod.conf', dbpath => '/var/lib/mongo', ssl => true, ssl_key => '/var/lib/mongodb/ssl/key.pem', clusterauthmode => 'x509' }" }
+
+    describe 'with default ssl_mode on mongodb 3.4.2' do
+      it do
+        is_expected.to contain_file('/etc/mongod.conf').with_content(/^net\.ssl\.mode: requireSSL/)
+        is_expected.to contain_file('/etc/mongod.conf').with_content(/^net\.ssl\.PEMKeyFile: \/var\/lib\/mongodb\/ssl\/key\.pem/)
+      end
+    end
+
+    describe 'with ssl_mode on mongodb 3.4.2' do
+      let(:pre_condition) { "class { 'mongodb::globals': version => '3.4.2' }  class { 'mongodb::server': config => '/etc/mongod.conf', dbpath => '/var/lib/mongo', ssl => true, ssl_key => '/var/lib/mongodb/ssl/key.pem', ssl_mode=> 'preferSSL' }" }
+      it do
+        is_expected.to contain_file('/etc/mongod.conf').with_content(/^net\.ssl\.mode: preferSSL/)
+      end
+    end
+
+    describe 'with x509 membership auth on mongodb 3.4.2' do
+      it {
+        is_expected.to contain_file('/etc/mongod.conf').with_content(/^security\.clusterAuthMode: x509/)
+      }
+    end
+
   end
 
   describe 'with absent ensure' do

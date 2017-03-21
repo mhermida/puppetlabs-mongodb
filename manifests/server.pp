@@ -63,6 +63,7 @@ class mongodb::server (
   $quiet           = undef,
   $slowms          = undef,
   $keyfile         = undef,
+  $clusterauthmode = undef,
   $key             = undef,
   $set_parameter   = undef,
   $syslog          = undef,
