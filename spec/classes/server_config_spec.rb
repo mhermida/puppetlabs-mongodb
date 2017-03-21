@@ -33,6 +33,15 @@ describe 'mongodb::server::config', :type => :class do
     }
   end
 
+  describe 'with default ssl_mode on mongodb 3.4.2' do
+    let(:pre_condition) { "class { 'mongodb::globals': version => '3.4.2' }  class { 'mongodb::server': config => '/etc/mongod.conf', dbpath => '/var/lib/mongo', ssl => true, ssl_key => '/var/lib/mongodb/ssl/key.pem' }" }
+
+    it {
+      is_expected.to contain_file('/etc/mongod.conf').with_content(/^net\.ssl\.mode: requireSSL/)
+      is_expected.to contain_file('/etc/mongod.conf').with_content(/^net\.ssl\.PEMKeyFile: \/var\/lib\/mongodb\/ssl\/key\.pem/)
+    }
+  end
+
   describe 'with absent ensure' do
     let(:pre_condition) { "class { 'mongodb::server': config => '/etc/mongod.conf', dbpath => '/var/lib/mongo', rcfile => '/root/.mongorc.js', ensure => absent }" }
 

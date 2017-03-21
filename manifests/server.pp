@@ -74,6 +74,7 @@ class mongodb::server (
   $ssl_ca                = undef,
   $ssl_weak_cert         = false,
   $ssl_invalid_hostnames = false,
+  $ssl_mode              = undef,
   $restart               = $mongodb::params::restart,
   $storage_engine        = undef,
 
@@ -87,7 +88,6 @@ class mongodb::server (
                             'readWriteAnyDatabase', 'userAdminAnyDatabase',
                             'clusterAdmin', 'clusterManager', 'clusterMonitor',
                             'hostManager', 'root', 'restore'],
-
   # Deprecated parameters
   $master                = undef,
   $slave                 = undef,
@@ -98,6 +98,7 @@ class mongodb::server (
 
   if $ssl {
     validate_string($ssl_key, $ssl_ca)
+    validate_string($ssl_key, $ssl_ca, $ssl_mode)
     validate_bool($ssl_weak_cert)
     validate_bool($ssl_invalid_hostnames)
   }
