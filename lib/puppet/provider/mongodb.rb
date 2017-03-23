@@ -108,16 +108,23 @@ class Puppet::Provider::Mongodb < Puppet::Provider
 
   def self.get_conn_string
     config = get_mongo_conf
-    bindip = config.fetch('bindip')
-    if bindip
-      first_ip_in_list = bindip.split(',').first
-      case first_ip_in_list
-      when '0.0.0.0'
-        ip_real = '127.0.0.1'
-      when /\[?::0\]?/
-        ip_real = '::1'
-      else
-        ip_real = first_ip_in_list
+
+    host = ''
+    if ssl_is_enabled
+      host  = Socket.gethostbyname(Socket.gethostname).first
+    else 
+      bindip = config.fetch('bindip')
+      if bindip
+        first_ip_in_list = bindip.split(',').first
+        case first_ip_in_list
+        when '0.0.0.0'
+          ip_real = '127.0.0.1'
+        when /\[?::0\]?/
+          ip_real = '::1'
+        else
+          ip_real = first_ip_in_list
+        end
+        host = ip_real
       end
     end
 
@@ -134,7 +141,7 @@ class Puppet::Provider::Mongodb < Puppet::Provider
       port_real = 27017
     end
 
-    "#{ip_real}:#{port_real}"
+    "#{host}:#{port_real}"
   end
 
   def self.db_ismaster
