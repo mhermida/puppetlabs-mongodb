@@ -219,6 +219,7 @@ class mongodb::server::config {
       mode    => '0755',
       owner   => $user,
       group   => $group,
+      seltype => 'mongod_var_lib_t',
       require => File[$config],
     }
 
