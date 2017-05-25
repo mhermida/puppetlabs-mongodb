@@ -67,7 +67,7 @@ describe Puppet::Type.type(:mongodb_user).provider(:mongodb) do
         "createUser": "new_user",
         "pwd": "pass",
         "customData": {"createdBy": "Puppet Mongodb_user['new_user']"},
-        "roles": ["role1","role2"],
+        "roles": [{"role":"role1","db":"new_database"},{"role":"role2","db":"new_database"}],
         "digestPassword": false
       }
       EOS
@@ -122,7 +122,7 @@ describe Puppet::Type.type(:mongodb_user).provider(:mongodb) do
 
   describe 'roles' do
     it 'returns a sorted roles' do
-      expect(instance.roles).to eq(['role1', 'role2'])
+      expect(instance.roles).to eq([{'role'=>'role1', 'db'=>'admin'}, {'role'=>'role2', 'db'=>'admin'}])
     end
   end
 

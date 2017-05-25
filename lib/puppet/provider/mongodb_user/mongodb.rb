@@ -31,11 +31,12 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
       else
         users = JSON.parse mongo_eval('printjson(db.system.users.find().toArray())')
         users.collect do |user|
+            Puppet.debug("Roles for #{user['user']}: #{ user['roles']}")
             new(:name          => user['_id'],
                 :ensure        => :present,
                 :username      => user['user'],
                 :database      => user['db'],
-                :roles         => from_roles(user['roles'], user['db']),
+                :roles         => from_roles(user['roles']),
                 :password_hash => '')
         end
       end
@@ -186,17 +187,21 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
     end
   end
   def roles=(roles)
+    Puppet.debug("Target roles for #{@resource[:username]}: #{roles}")     
+    Puppet.debug("Resource roles for #{@resource[:username]}: #{@resource[:roles]}")     
     if db_ismaster
       if mongo_24?
         mongo_eval("db.system.users.update({user:'#{@resource[:username]}'}, { $set: {roles: #{@resource[:roles].to_json}}})")
       else
         grant = roles-@property_hash[:roles]
         if grant.length > 0
-          mongo_eval("db.getSiblingDB('#{@resource[:database]}').grantRolesToUser('#{@resource[:username]}', #{grant. to_json})")
+          Puppet.debug("Granting roles to: #{@resource[:username]}. Roles granted: #{grant}")     
+          mongo_eval("db.getSiblingDB('#{@resource[:database]}').grantRolesToUser('#{@resource[:username]}', #{grant.to_json})")
         end
 
         revoke = @property_hash[:roles]-roles
         if revoke.length > 0
+          Puppet.debug("Revoking roles from: #{@resource[:username]}. Roles revoked #{revoke}")     
           mongo_eval("db.getSiblingDB('#{@resource[:database]}').revokeRolesFromUser('#{@resource[:username]}', #{revoke.to_json})")
         end
       end
@@ -207,13 +212,17 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
 
   private
 
-  def self.from_roles(roles, db)
-    roles.map do |entry|
-        if entry['db'] == db
-            entry['role']
-        else
-            "#{entry['role']}@#{entry['db']}"
-        end
-    end.sort
+  def self.from_roles(roles)
+    #roles.map do |entry|
+    #    Puppet.debug("from_roles function, processing entry #{entry}")
+    #    if entry['db'] == db
+    #       # entry['role']
+    #       entry
+    #   else
+    #        # "#{entry['role']}@#{entry['db']}"
+    #        entry
+    #    end
+    #end.sort { |a, b| [a['db'], a['role' ]] <=> [b['db'], b['role']] }
+    roles.sort { |a, b| [a['db'], a['role' ]] <=> [b['db'], b['role']] }
   end
 end
