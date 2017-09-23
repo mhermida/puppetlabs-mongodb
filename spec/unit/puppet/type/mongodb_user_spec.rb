@@ -33,12 +33,17 @@ describe Puppet::Type.type(:mongodb_user) do
   end
 
   it 'should use default role' do
-    expect(@user[:roles]).to eq(['dbAdmin'])
+    # expect(@user[:roles]).to eq(['dbAdmin'])
+    expect(@user[:roles]).to eq([{'role' => 'dbAdmin', 'db' => 'testdb'}])
   end
 
   it 'should accept a roles array' do
     @user[:roles] = ['role1', 'role2']
-    expect(@user[:roles]).to eq(['role1', 'role2'])
+    # expect(@user[:roles]).to eq(['role1', 'role2'])
+    expect(@user[:roles]).to eq([
+      {'role' => 'role1', 'db' => 'testdb'},
+      {'role' => 'role2', 'db' => 'testdb'}
+    ])
   end
 
   it 'should require a name' do
@@ -66,7 +71,8 @@ describe Puppet::Type.type(:mongodb_user) do
               :database => 'testdb',
               :password_hash => 'pass',
               :roles => ['b', 'a'])
-    expect(@user[:roles]).to eq(['a', 'b'])
+    sorted_roles = [{"role" => "a", "db"=>"testdb"}, {"role"=>"b", "db"=>"testdb"}]
+    # expect(@user[:roles]).to eq(['a', 'b'])
+    expect(@user[:roles]).to eq(sorted_roles)
   end
-
 end
