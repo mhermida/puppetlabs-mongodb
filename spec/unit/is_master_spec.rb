@@ -12,7 +12,8 @@ describe Facter::Util::Fact do
       let(:mongoPort) { 27017 }
 
       before do
-        Facter::Core::Execution.stubs(:which).with('mongo').returns(true)
+        Facter::Util::Resolution.stubs(:which).with('mongo').returns(true)
+        Facter::Util::Resolution.stubs(:which).with('mongod').returns(true)
         Facter::Core::Execution.stubs(:execute).with("mongo --quiet --port #{mongoPort} --eval \"printjson(db.adminCommand({ ping: 1 }))\"").returns( '{ "ok" : 1 }' )
         Facter::Core::Execution.stubs(:execute).with("mongo --quiet --port #{mongoPort} --eval \"printjson(db.isMaster().ismaster)\"").returns(true)
       end
