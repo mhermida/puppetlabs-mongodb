@@ -29,7 +29,8 @@ Puppet::Type.type(:mongodb_user).provide(:mongodb, :parent => Puppet::Provider::
         end
         return allusers
       else
-        users = JSON.parse mongo_eval('printjson(db.system.users.find().toArray())')
+        # Add projection to avoid some bin data
+        users = JSON.parse mongo_eval('printjson(db.system.users.find({},{"_id": 1, "roles": 1, "user": 1, "db": 1}).toArray())')
         users.collect do |user|
             Puppet.debug("Roles for #{user['user']}: #{ user['roles']}")
             new(:name          => user['_id'],
